@@ -1,0 +1,53 @@
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins-dependencies
+
+# Coverage
+coverage/
+
+# =========================
+# Android
+# =========================
+android/.gradle/
+android/local.properties
+android/app/build/
+android/app/debug
+android/app/profile
+android/app/release
+
+# =========================
+# iOS
+# =========================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/.last_build_id
+
+# =========================
+# IDEs
+# =========================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# =========================
+# System / Misc
+# =========================
+.DS_Store
+*.log
+*.tmp
+*.swp
+*.lock
+
+# =========================
+# Hive (local database)
+# =========================
+*.hive
