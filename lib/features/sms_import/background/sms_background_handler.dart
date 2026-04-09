@@ -8,11 +8,13 @@ import '../domain/airtel_money_txn.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 //import 'package:mobilecashbook/core/api/sms_payload.dart';
 import 'package:mobilecashbook/core/device_id.dart';
+
 Future<String> getDeviceId() async {
   final info = DeviceInfoPlugin();
   final android = await info.androidInfo;
   return android.id; // stable device id
 }
+
 @pragma('vm:entry-point')
 Future<void> onBackgroundMessage(SmsMessage message) async {
   print("✅ BACKGROUND CALLBACK FIRED"); // <-- keep this for testing
@@ -43,7 +45,7 @@ Future<void> onBackgroundMessage(SmsMessage message) async {
       ? parseAirtelMessage(body, smsDate: smsDate)
       : parseMtnMessage(body, smsDate: smsDate);
 
-   if (tx != null) {
+  if (tx != null) {
     await TxnStore.upsert(tx);
     print("✅ TX STORED locally tid=${tx.tid} net=${tx.network.name}");
   } else {
@@ -53,5 +55,4 @@ Future<void> onBackgroundMessage(SmsMessage message) async {
   }
 
   await ApiSender.tryFlushQueue();
-
 }

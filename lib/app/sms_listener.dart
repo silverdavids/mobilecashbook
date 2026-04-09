@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telephony/telephony.dart';
 
-import '../features/sms_import/background/sms_background_handler.dart';
 import '../features/sms_import/data/txn_parsers.dart';
 import '../features/sms_import/data/txn_store.dart';
 import '../features/sms_import/domain/airtel_money_txn.dart';
@@ -13,7 +12,8 @@ enum SmsListenState { off, listening, denied, error }
 class SmsListenStateNotifier extends Notifier<SmsListenState> {
   @override
   SmsListenState build() => SmsListenState.off;
-   Future<void> _handleForegroundMessage(SmsMessage msg) async {
+
+  Future<void> _handleForegroundMessage(SmsMessage msg) async {
     await TxnStore.init();
 
     final body = msg.body ?? "";
@@ -34,7 +34,6 @@ class SmsListenStateNotifier extends Notifier<SmsListenState> {
     }
   }
 
-
   Future<void> init() async {
     try {
       final ok = await _telephony.requestPhoneAndSmsPermissions ?? false;
@@ -47,12 +46,13 @@ class SmsListenStateNotifier extends Notifier<SmsListenState> {
       _telephony.listenIncomingSms(
         listenInBackground: false,
         onNewMessage: _handleForegroundMessage,
-        onBackgroundMessage: onBackgroundMessage,
       );
 
-
       state = SmsListenState.listening;
-    } catch (_) {
+    } catch (e, st) {
+      // Keep error visible for on-device diagnosis.
+      // ignore: avoid_print
+      print("❌ SMS listen init failed: $e\n$st");
       state = SmsListenState.error;
     }
   }
