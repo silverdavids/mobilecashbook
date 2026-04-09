@@ -43,9 +43,15 @@ Future<void> onBackgroundMessage(SmsMessage message) async {
       ? parseAirtelMessage(body, smsDate: smsDate)
       : parseMtnMessage(body, smsDate: smsDate);
 
-  if (tx != null) {
+   if (tx != null) {
     await TxnStore.upsert(tx);
+    print("✅ TX STORED locally tid=${tx.tid} net=${tx.network.name}");
+  } else {
+    print(
+      "⚠️ SMS matched ${net.name} but parser returned null. sender=$sender bodyLen=${body.length}",
+    );
   }
 
   await ApiSender.tryFlushQueue();
+
 }

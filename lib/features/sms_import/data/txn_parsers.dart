@@ -70,12 +70,11 @@ String _clean(String v) => v.trim();
 /// ------------------------------------------------------------
 /// AIRTEL PARSER
 /// ------------------------------------------------------------
+
 AirtelMoneyTxn? parseAirtelMessage(
   String body, {
   DateTime? smsDate,
 }) {
-  final lower = body.toLowerCase();
-
   final amount = _extractAmount(body);
   if (amount == null) return null;
 
@@ -83,15 +82,22 @@ AirtelMoneyTxn? parseAirtelMessage(
   final balance = _extractBalance(body);
   final phone = _extractPhone(body);
 
-  AirtelTxnType type;
+  AirtelTxnType? type;
   String name = "";
 
-  if (lower.startsWith("received")) {
+  final isCredit =
+      RegExp(r'\breceived\b', caseSensitive: false).hasMatch(body) ||
+      RegExp(r'\bcash\s+deposit\b', caseSensitive: false).hasMatch(body);
+
+  final isDebit = RegExp(
+    r'\b(sent|paid|withdrawn?|cash\s*out|cashout)\b',
+    caseSensitive: false,
+  ).hasMatch(body);
+
+  if (isCredit) {
     type = AirtelTxnType.credit;
     name = "Received";
-  } else if (lower.startsWith("sent") ||
-             lower.startsWith("paid") ||
-             lower.contains("withdraw")) {
+  } else if (isDebit) {
     type = AirtelTxnType.debit;
     name = "Payment";
   } else {
@@ -99,7 +105,7 @@ AirtelMoneyTxn? parseAirtelMessage(
   }
 
   return AirtelMoneyTxn(
-    type: type,
+    type: type!,
     tid: tid,
     amount: amount,
     partyName: _clean(name),
@@ -109,6 +115,8 @@ AirtelMoneyTxn? parseAirtelMessage(
     network: Network.airtel,
   );
 }
+
+
 
 /// ------------------------------------------------------------
 /// MTN PARSER

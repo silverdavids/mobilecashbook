@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telephony/telephony.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+
 import 'app/router.dart';
 import 'app/theme.dart';
 import 'app/sms_bootstrap.dart';
@@ -11,24 +12,31 @@ import 'features/sms_import/data/txn_store.dart';
 import 'features/sms_import/domain/airtel_money_txn.dart';
 import 'features/sms_import/data/sms_queue.dart';
 
+
 enum SmsListenState { off, listening, denied, error }
 
+
 final Telephony telephony = Telephony.instance;
+
+
 
 
 Future<void> initSmsListener() async {
   final bool ok = await telephony.requestPhoneAndSmsPermissions ?? false;
   if (!ok) return;
 
+
   telephony.listenIncomingSms(
     onNewMessage: (SmsMessage msg) async {
       final body = msg.body ?? "";
+
 
       // ✅ Try Airtel first
       var tx = parseAirtelMoneyTxn(body,
           smsDate: msg.date != null
               ? DateTime.fromMillisecondsSinceEpoch(msg.date!)
               : DateTime.now());
+
 
       // ✅ If not Airtel, try MTN
       tx ??= parseMtnMoMoTxn(
