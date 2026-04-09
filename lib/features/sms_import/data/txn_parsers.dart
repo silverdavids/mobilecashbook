@@ -74,8 +74,6 @@ AirtelMoneyTxn? parseAirtelMessage(
   String body, {
   DateTime? smsDate,
 }) {
-  final lower = body.toLowerCase();
-
   final amount = _extractAmount(body);
   if (amount == null) return null;
 
@@ -83,15 +81,20 @@ AirtelMoneyTxn? parseAirtelMessage(
   final balance = _extractBalance(body);
   final phone = _extractPhone(body);
 
-  AirtelTxnType type;
+  AirtelTxnType? type;
   String name = "";
 
-  if (lower.startsWith("received")) {
+  final isCredit = RegExp(r'\breceived\b', caseSensitive: false).hasMatch(body) ||
+      RegExp(r'\bcash\s+deposit\b', caseSensitive: false).hasMatch(body);
+  final isDebit = RegExp(
+    r'\b(sent|paid|withdrawn?|cash\s*out|cashout)\b',
+    caseSensitive: false,
+  ).hasMatch(body);
+
+  if (isCredit) {
     type = AirtelTxnType.credit;
     name = "Received";
-  } else if (lower.startsWith("sent") ||
-             lower.startsWith("paid") ||
-             lower.contains("withdraw")) {
+  } else if (isDebit) {
     type = AirtelTxnType.debit;
     name = "Payment";
   } else {
@@ -99,7 +102,7 @@ AirtelMoneyTxn? parseAirtelMessage(
   }
 
   return AirtelMoneyTxn(
-    type: type,
+    type: type!,
     tid: tid,
     amount: amount,
     partyName: _clean(name),
@@ -117,8 +120,6 @@ AirtelMoneyTxn? parseMtnMessage(
   String body, {
   DateTime? smsDate,
 }) {
-  final lower = body.toLowerCase();
-
   final amount = _extractAmount(body);
   if (amount == null) return null;
 
@@ -126,15 +127,22 @@ AirtelMoneyTxn? parseMtnMessage(
   final balance = _extractBalance(body);
   final phone = _extractPhone(body);
 
-  AirtelTxnType type;
+  AirtelTxnType? type;
   String name = "";
 
-  if (lower.contains("you have received")) {
+  final isCredit = RegExp(
+    r'\b(you have received|received ugx)\b',
+    caseSensitive: false,
+  ).hasMatch(body);
+  final isDebit = RegExp(
+    r'\b(you have sent|you have withdrawn|withdrawn|paid|cash\s*out)\b',
+    caseSensitive: false,
+  ).hasMatch(body);
+
+  if (isCredit) {
     type = AirtelTxnType.credit;
     name = "Received";
-  } else if (lower.contains("you have sent") ||
-             lower.contains("withdrawn") ||
-             lower.contains("paid")) {
+  } else if (isDebit) {
     type = AirtelTxnType.debit;
     name = "Withdraw";
   } else {
@@ -142,7 +150,7 @@ AirtelMoneyTxn? parseMtnMessage(
   }
 
   return AirtelMoneyTxn(
-    type: type,
+    type: type!,
     tid: tid,
     amount: amount,
     partyName: _clean(name),
