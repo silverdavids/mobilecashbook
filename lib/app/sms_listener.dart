@@ -45,7 +45,7 @@ class SmsListenStateNotifier extends Notifier<SmsListenState> {
       }
 
       _telephony.listenIncomingSms(
-        listenInBackground: true,
+        listenInBackground: false,
         onNewMessage: _handleForegroundMessage,
         onBackgroundMessage: onBackgroundMessage,
       );
