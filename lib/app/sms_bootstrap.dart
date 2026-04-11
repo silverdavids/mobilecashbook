@@ -1,4 +1,3 @@
-// app/sms_bootstrap.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'sms_listener.dart';
@@ -11,40 +10,63 @@ class SmsBootstrap extends ConsumerStatefulWidget {
   ConsumerState<SmsBootstrap> createState() => _SmsBootstrapState();
 }
 
-class _SmsBootstrapState extends ConsumerState<SmsBootstrap> {
+class _SmsBootstrapState extends ConsumerState<SmsBootstrap>
+    with WidgetsBindingObserver {
   bool started = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    print("[SMSDBG][BOOT] STEP 1: SmsBootstrap initState");
+
     Future.microtask(() async {
-      if (started) return;
+      print("[SMSDBG][BOOT] STEP 2: microtask entered, started=$started");
+
+      if (started) {
+        print("[SMSDBG][BOOT] STEP 3: already started, skipping init");
+        return;
+      }
+
       started = true;
+      print("[SMSDBG][BOOT] STEP 4: calling sms listener init()");
       await ref.read(smsListenStateProvider.notifier).init();
+      print("[SMSDBG][BOOT] STEP 5: sms listener init() finished");
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print("[SMSDBG][BOOT] LIFECYCLE: $state");
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    print("[SMSDBG][BOOT] dispose()");
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(smsListenStateProvider);
+    print("[SMSDBG][BOOT] build() state=$state");
 
- return Stack(
-  children: [
-    widget.child,
-
-    Align(
-      alignment: Alignment.bottomCenter,
-      child: SafeArea(
-        top: false,
-        // ✅ push it ABOVE the BottomNavigationBar area
-        minimum: const EdgeInsets.symmetric(horizontal: 12).copyWith(
-          bottom: kBottomNavigationBarHeight + 24, // extra buffer
+    return Stack(
+      children: [
+        widget.child,
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: SafeArea(
+            top: false,
+            minimum: const EdgeInsets.symmetric(horizontal: 12).copyWith(
+              bottom: kBottomNavigationBarHeight + 24,
+            ),
+            child: _SmsIndicator(state: state),
+          ),
         ),
-        child: _SmsIndicator(state: state),
-      ),
-    ),
-  ],
-);
+      ],
+    );
   }
 }
 
@@ -54,7 +76,8 @@ class _SmsIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // show only when useful
+    print("[SMSDBG][INDICATOR] build() state=$state");
+
     if (state == SmsListenState.off) return const SizedBox.shrink();
 
     final text = switch (state) {

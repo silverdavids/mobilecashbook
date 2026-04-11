@@ -110,13 +110,19 @@ String _balText(int? v) => v == null ? "—" : _ugx(v);
 Widget build(BuildContext context) {
   final box = Hive.box(TxnStore.boxName);
 
+  print("[SMSDBG][DASH] build() called");
+
   return ValueListenableBuilder(
     valueListenable: box.listenable(),
     builder: (context, _, __) {
-      // Convert Map -> AirtelMoneyTxn
+      print("[SMSDBG][DASH] Hive listenable triggered");
+      print("[SMSDBG][DASH] raw box count=${box.length}");
+
       final txns = box.values
           .map((e) => AirtelMoneyTxn.fromJson(Map<String, dynamic>.from(e)))
           .toList();
+
+      print("[SMSDBG][DASH] parsed txns count=${txns.length}");
 
       final filtered = _applyPeriod(txns);
       final income = _sumIncome(filtered);
@@ -129,6 +135,9 @@ Widget build(BuildContext context) {
       final hasAnyBal = (mtnBal != null) || (airtelBal != null);
       final totalBal = (mtnBal ?? 0) + (airtelBal ?? 0);
       final displayBalance = hasAnyBal ? totalBal : net;
+
+      print("[SMSDBG][DASH] filtered count=${filtered.length}");
+      print("[SMSDBG][DASH] income=$income expense=$expense net=$net");
 
       return Scaffold(
         appBar: AppBar(
@@ -178,7 +187,7 @@ Widget build(BuildContext context) {
             const Text("Recent transactions",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            ..._recentTxns(txns), // ✅ use live txns
+            ..._recentTxns(txns),
           ],
         ),
       );

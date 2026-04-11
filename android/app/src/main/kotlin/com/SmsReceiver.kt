@@ -12,7 +12,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -59,6 +58,13 @@ class SmsReceiver : BroadcastReceiver() {
             )
 
             SmsStore.enqueue(context, smsData)
+
+            // Notify Flutter app if active
+            val flutterIntent = Intent("com.example.mobilecashbook.NEW_SMS")
+            flutterIntent.putExtra("from", from)
+            flutterIntent.putExtra("body", body)
+            flutterIntent.putExtra("smsDate", smsDate)
+            context.sendBroadcast(flutterIntent)
         }
 
         enqueueForwardWorker(context)
